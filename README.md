@@ -14,17 +14,17 @@ components:
     $11 LED lights (NeoPixel Ring - 16 x WS2812 5050 RGB LED with Integrated Drivers )
     $3  motion sensor (HC-SR501 Infrared PIR Motion Sensor Module)
     $15 snow globe (Darice Make, Plastic, 130mm Waterglobe Kit, Clear )
-    ==========
+    =========
     $91 total
 
-also need:
-----------
-    1500 grit sand paper 
+also needed:
+------------
+    monitor w/ hdmi, usb keyboard (to program pi)
+    sand paper (1500 grit)
+    box for base of crystal ball (tea container)
     hot glue gun
-    tea box
     raspi breadboard jumper wires
-    soldering iron & solder
-    monitor and computer
+    soldering iron and solder
 
 
 bonnet install:
@@ -34,7 +34,7 @@ leds:
     https://learn.adafruit.com/adafruit-neopixel-uberguide/python-circuitpython
 
 raspi assistant:
-    looked into rhaspy but scrapped it after having trouble
+    looked into Rhasspy for voice control, but scrapped it after having trouble
 
     https://www.instructables.com/Pi-Home-a-Raspberry-Powered-Virtual-Assistant/
 
