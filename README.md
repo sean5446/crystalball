@@ -1,5 +1,7 @@
 # Crystal ball
 
+![Images](https://imgur.com/MtSlOiC)
+
 ```
 components:
 -----------
