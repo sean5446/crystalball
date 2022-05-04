@@ -1,6 +1,6 @@
 # Crystal ball
 
-![Images](https://imgur.com/MtSlOiC)
+![Image](.github/crystal_ball.gif)
 
 ```
 components:
