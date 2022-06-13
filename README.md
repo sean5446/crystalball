@@ -2,6 +2,10 @@
 
 ![Image](.github/crystal_ball.gif)
 
+## Overview
+Raspberry pi project as a gag-gift for father's day. A 'crystal ball' to predict the future of the stock market. Motion detection to wake the device, Microphone with Google Assistant to answer questions. RGB LEDs to glow red/green when the market is up or down. Asking it for investing advice plays random quips from Jim Cramer or the Simpsons.
+
+
 ```
 components:
 -----------
