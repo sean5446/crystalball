@@ -1,0 +1,196 @@
+<html>
+<head>
+<title>CrystalBall</title>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+<meta http-equiv="language" content="en" />
+
+<link rel="shortcut icon" type="image/x-icon" href="static/favicon.ico">
+<link rel="icon" type="image/x-icon" href="static/favicon.ico">
+
+<script
+  src="https://code.jquery.com/jquery-3.7.1.min.js"
+  integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+  crossorigin="anonymous"></script>
+
+<script type="text/javascript" src="static/jqColorPicker.min.js"></script>
+
+<script>
+$(document).ready(function(){
+
+  var quips = null;
+  var advice = null;
+
+  $.get("quips", function(data) {
+    quips = data.resp;
+    console.log(quips)
+  });
+
+  $.get("advice", function(data) {
+    advice = data.resp;
+    console.log(advice)
+  });
+
+  $(".system").click(function() {
+    console.log(this.id);
+    if (this.id == 'reboot' || this.id == 'shutdown') {
+      if (confirm(`Confirm ${this.id}`) == false) {
+        return;
+      }
+    }
+    $.post(`system/${this.id}`, function(data) {
+      $("#result").html(data.resp);
+    });
+  });
+
+  $(".led").click(function() {
+    console.log(this.id);
+    if (this.id == 'custom') return;
+    $.post(`led/${this.id}`, function(data) {
+      $("#result").html("LEDs: " + data.resp);
+    });
+  });
+
+  function getRandom(array) {
+		return array[Math.floor(Math.random() * array.length)];
+	}
+
+  $(".audio").click(function() {
+    console.log(this.id);
+    var audioFile = null;
+    if (this.id == 'advice') {
+      audioFile = getRandom(advice);
+    } else if (this.id == 'quips') {
+      audioFile = getRandom(quips);
+    }
+    console.log(audioFile)
+    const audiohtml = `<audio controls autoplay>
+      <source src="static/${this.id}/${audioFile}" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>`;
+    $('#htmlaudio').html(audiohtml);
+  });
+
+  $(".nav").click(function() {
+    console.log(this.id);
+    $('#htmlaudio').hide();
+    $('.tab').hide();
+    $(`#tab-${this.id}`).show();
+  });
+
+  var wait = false;
+  function throttle(callback, limit, ...params) {
+    if (!wait) {
+        callback(...params);
+        wait = true;
+        setTimeout(function() {
+            wait = false;
+        }, limit);
+    }
+  }
+
+  function post(url, data, success) {
+    $.ajax({
+      type: 'POST',
+      url: url,
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      data: JSON.stringify(data),
+      success: success
+    });
+  }
+
+  function setColor(color) {
+    console.log(color);
+    post('led/custom', color, function(data) {
+      $("#result").html("LEDs: " + data.resp);
+      $('#custom').css("color", `rgb(${color.r}, ${color.g}, ${color.b}`)
+    });
+  }
+
+	$('#custom').colorPicker({
+    renderCallback: function($elm, toggled) {
+      var color = this.color.colors.RND.rgb;
+      throttle(setColor, 1000, color);
+    }
+  });
+
+  $("#tab-audio").show();
+
+});
+</script>
+<style>
+* { border: 1px solid gray; }
+body {
+  background-color: black;
+  font-weight: bold;
+  font-family: sans-serif;
+  font-size: 60px;
+  text-align: center;
+  color: white;
+}
+#title {
+  font-size: 90px;
+}
+#result {
+  margin: 15px 0px 15px 0px;
+  font-size: 35px;
+}
+#nav-menu {
+  margin: 40px 0px 40px 0px;
+}
+span {
+  cursor: pointer;
+}
+.audio {
+  cursor: pointer;
+  margin: 40px 0px 40px 0px;
+}
+.system {
+  cursor: pointer;
+  margin: 40px 0px 40px 0px;
+}
+.led {
+  cursor: pointer;
+  margin: 40px 0px 40px 0px;
+}
+</style>
+</head>
+<body>
+  <div id="title" style="color: #7c5097;">
+    🔮 Crystal Ball 🔮
+  </div>
+
+  <div id="nav-menu">
+    <span class="nav" id="audio">Advice</span> |
+    <span class="nav" id="system">System</span> |
+    <span class="nav" id="leds">LEDs</span>
+  </div>
+
+  <div id="result">&nbsp;</div>
+
+  <div class="tab" id="tab-audio" style="display: none">
+    <div class="audio" id="advice" style="color: gray;">advice 📈</div>
+    <div class="audio" id="quips" style="color: gray;">quip 🔊</div>
+  </div>
+
+  <div class="tab" id="tab-system" style="display: none">
+    <div class="system" id="uptime" style="color: gray;">uptime ⏰</div>
+    <div class="system" id="sleep" style="color: orange;">sleep 🌙</div>
+    <div class="system" id="wake" style="color: green;">wake ☀️</div>
+    <div class="system" id="reboot" style="color: yellow;">reboot 🔄</div>
+    <div class="system" id="shutdown" style="color: red;">shutdown 🛑</div>
+  </div>
+
+  <div class="tab" id="tab-leds" style="display: none">
+    <div class="led" id="green" style="color: green;">green 🟢</div>
+    <div class="led" id="red" style="color: red;">red 🔴</div>
+    <div class="led" id="blue" style="color: blue;">blue 🔵</div>
+    <div class="led" id="custom">custom ❓</div>
+    <div class="led" id="off">off</div>
+  </div>
+
+  <div id="htmlaudio" style="display: none"></div>
+
+</body>
+</html>
