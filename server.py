@@ -3,16 +3,19 @@ import json
 import time
 import threading
 import subprocess
-import sqlite3
 import asyncio
 
 from flask import Flask, send_from_directory, request, abort
 from pixelcontrol import PixelControl
+from stock import Stock
+from db import Db
 
 
 app = Flask(__name__)
 pixels = PixelControl()
-db_name = "crystallball.db"
+stock = Stock()
+db = Db("crystalball.db")
+
 _CONTENT_TYPE = {
     '.js': 'text/javascript',
     '.css': 'text/css',
@@ -22,36 +25,13 @@ _CONTENT_TYPE = {
     '.mp3': 'adio/mpeg',
 }
 
+
 def ok(resp: dict):
     return json.dumps(resp), 200, {'Content-Type': 'application/json'}
 
 
 def async_os_system(cmd: str):
     asyncio.ensure_future(os.system(f'sleep 1 && {cmd}'))
-
-
-def set_awake_status(status: int):
-    with sqlite3.connect(db_name) as con:
-        try:
-            cur = con.cursor()
-            cur.execute(f"update status set awake={status} where id=1")
-            con.commit()
-        except Exception as ex:
-            print(ex)
-
-
-def get_awake_status() -> bool:
-    with sqlite3.connect(db_name) as con:
-        try:
-            cur = con.cursor()
-            res = cur.execute(f"select awake from status where id=1")
-            awake = res.fetchall()
-            return bool(awake[0][0])
-        except Exception as ex:
-            cur = con.cursor()
-            cur.execute(f"insert into status values (1, 1)")
-            con.commit()
-            return True
 
 
 def run_cmd(cmd: str, capture_stdout=True, capture_stderr=True) -> str:
@@ -66,27 +46,9 @@ def run_cmd(cmd: str, capture_stdout=True, capture_stderr=True) -> str:
         return str(process.communicate()[0].strip(), 'UTF-8')
 
 
-def read_file(file_path):
-    with open(file_path) as f:
-        data = f.read()
-    return data
-
-
-def get_market_alpha():
-    sym = 'SPY'
-    url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={sym}&apikey={key}'
-    print(url)
-    #r = requests.get(url)
-    #data = r.json()
-    data = json.loads(read_file('ok.json'))
-    daily = data['Time Series (Daily)']
-    a = list(daily.items())[0]
-    print(a)
-
-
 @app.route('/')
 def serve_index():
-    return send_from_directory('.', 'index.html')
+    return send_from_directory('www', 'index.html')
 
 
 @app.route('/<path:path>')
@@ -94,7 +56,7 @@ def static_files(path):
     mime_type = _CONTENT_TYPE.get(os.path.splitext(path)[1], 'text/plain')
     if mime_type == 'text/plain':
         abort(405)
-    return send_from_directory('.', path, mimetype=mime_type)
+    return send_from_directory('www', path, mimetype=mime_type)
 
 
 @app.route('/quips')
@@ -151,28 +113,30 @@ def system(command):
     resp = f"unknown command: '{command}'"
     if command == 'uptime':
         resp = run_cmd("uptime")
+    elif command == 'status':
+        resp = 'awake' if db.get_awake_status() else 'asleep'
     elif command == 'reboot':
         resp = "rebooting..."
+        pixels.off()
         async_os_system('sudo reboot')
     elif command == 'shutdown':
         resp = "shutdown..."
+        pixels.off()
         async_os_system('sudo shutdown now')
     elif command == 'sleep':
-        set_awake_status(0)
+        db.set_awake_status(0)
         pixels.off()
         resp = 'sleeping...'
     elif command == 'wake':
-        set_awake_status(1)
-        pixels.fill((0, 0, 255))
+        db.set_awake_status(1)
+        pixels.blue()
         resp = 'awake'
     return ok({'resp': resp})
 
 
 @app.route('/led/<command>', methods=['POST'])
 def led(command):
-    rgb = request.get_json()
     print(command)
-    print(rgb)
     if command == 'green':
         pixels.green()
     elif command == 'red':
@@ -182,6 +146,8 @@ def led(command):
     elif command == 'rainbow':
         pixels.rainbow()
     elif command == 'custom':
+        rgb = request.get_json()
+        print(rgb)
         command = (rgb['r'], rgb['g'], rgb['b'])
         pixels.fill(command)
     else:
@@ -189,17 +155,24 @@ def led(command):
     return ok({'resp': command})
 
 
+@app.route('/market/<command>', methods=['POST'])
+def market(command):
+    print(command)
+    return ok({'resp': ''})
+
+
 if __name__ == '__main__':
-    with sqlite3.connect(db_name) as con:
-        cur = con.cursor()
-        cur.execute("create table if not exists status(id, awake)")
-        con.commit()
+    pixels.blue()
 
     threading.Thread(target=lambda: app.run(host="0.0.0.0", port=80, debug=True, use_reloader=False)).start()
 
     while True:
-        if get_awake_status():
+        if db.get_awake_status():
             print("running")
+            if stock.is_symbol_up("SPY"):
+                pixels.green()
+            else:
+                pixels.red()
         else:
             print("not running")
         time.sleep(20)

@@ -5,15 +5,15 @@
 <meta content="utf-8" http-equiv="encoding">
 <meta http-equiv="language" content="en" />
 
-<link rel="shortcut icon" type="image/x-icon" href="static/favicon.ico">
-<link rel="icon" type="image/x-icon" href="static/favicon.ico">
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
 
 <script
   src="https://code.jquery.com/jquery-3.7.1.min.js"
   integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
   crossorigin="anonymous"></script>
 
-<script type="text/javascript" src="static/jqColorPicker.min.js"></script>
+<script type="text/javascript" src="jqColorPicker.min.js"></script>
 
 <script>
 $(document).ready(function(){
@@ -51,6 +51,13 @@ $(document).ready(function(){
     });
   });
 
+  $(".market").click(function() {
+    console.log(this.id);
+    $.post(`market/${this.id}`, function(data) {
+      $("#result").html("market: " + data.resp);
+    });
+  });
+
   function getRandom(array) {
 		return array[Math.floor(Math.random() * array.length)];
 	}
@@ -65,7 +72,7 @@ $(document).ready(function(){
     }
     console.log(audioFile)
     const audiohtml = `<audio controls autoplay>
-      <source src="static/${this.id}/${audioFile}" type="audio/mpeg">
+      <source src="${this.id}/${audioFile}" type="audio/mpeg">
       Your browser does not support the audio element.
     </audio>`;
     $('#htmlaudio').html(audiohtml);
@@ -108,6 +115,7 @@ $(document).ready(function(){
     });
   }
 
+  // https://github.com/PitPik/tinyColorPicker
 	$('#custom').colorPicker({
     renderCallback: function($elm, toggled) {
       var color = this.color.colors.RND.rgb;
@@ -120,14 +128,15 @@ $(document).ready(function(){
 });
 </script>
 <style>
-* { border: 1px solid gray; }
+/* * { border: 1px solid gray; } */
 body {
   background-color: black;
   font-weight: bold;
   font-family: sans-serif;
-  font-size: 60px;
+  font-size: 65px;
   text-align: center;
   color: white;
+  background-image: url('fog.png');
 }
 #title {
   font-size: 90px;
@@ -142,27 +151,36 @@ body {
 span {
   cursor: pointer;
 }
+a {
+  text-decoration: none;
+}
 .audio {
   cursor: pointer;
-  margin: 40px 0px 40px 0px;
+  margin: 50px 0px 50px 0px;
+}
+.market {
+  cursor: pointer;
+  margin: 50px 0px 50px 0px;
 }
 .system {
   cursor: pointer;
-  margin: 40px 0px 40px 0px;
+  margin: 50px 0px 50px 0px;
 }
 .led {
   cursor: pointer;
-  margin: 40px 0px 40px 0px;
+  margin: 50px 0px 50px 0px;
 }
 </style>
 </head>
 <body>
+  <br />
   <div id="title" style="color: #7c5097;">
     🔮 Crystal Ball 🔮
   </div>
 
   <div id="nav-menu">
     <span class="nav" id="audio">Advice</span> |
+    <span class="nav" id="market">Market</span> |
     <span class="nav" id="system">System</span> |
     <span class="nav" id="leds">LEDs</span>
   </div>
@@ -170,11 +188,20 @@ span {
   <div id="result">&nbsp;</div>
 
   <div class="tab" id="tab-audio" style="display: none">
-    <div class="audio" id="advice" style="color: gray;">advice 📈</div>
+    <div class="audio" id="advice" style="color: gray;">advice 💵</div>
     <div class="audio" id="quips" style="color: gray;">quip 🔊</div>
   </div>
 
+  <div class="tab" id="tab-market" style="display: none">
+    <div class="market" id="check" style="color: gray;">last check ⏰</div>
+    <div class="market" id="google">
+      <a href="https://finance.google.com">google 📈</a></div>
+    <div class="market" id="yahoo">
+      <a href="https://finance.yahoo.com">yahoo 📉</a></div>
+  </div>
+
   <div class="tab" id="tab-system" style="display: none">
+    <div class="system" id="status" style="color: gray;">status 🚀</div>
     <div class="system" id="uptime" style="color: gray;">uptime ⏰</div>
     <div class="system" id="sleep" style="color: orange;">sleep 🌙</div>
     <div class="system" id="wake" style="color: green;">wake ☀️</div>
@@ -183,11 +210,11 @@ span {
   </div>
 
   <div class="tab" id="tab-leds" style="display: none">
-    <div class="led" id="green" style="color: green;">green 🟢</div>
     <div class="led" id="red" style="color: red;">red 🔴</div>
+    <div class="led" id="green" style="color: green;">green 🟢</div>
     <div class="led" id="blue" style="color: blue;">blue 🔵</div>
-    <div class="led" id="custom">custom ❓</div>
-    <div class="led" id="off">off</div>
+    <div class="led" id="custom" style="text-shadow: 1px 1px 2px white;">custom ❓</div>
+    <div class="led" id="off">off 🛑</div>
   </div>
 
   <div id="htmlaudio" style="display: none"></div>
