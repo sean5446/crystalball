@@ -1,3 +1,4 @@
+
 import os
 import json
 import time
@@ -40,7 +41,6 @@ def run_cmd(cmd: str, capture_stdout=True, capture_stderr=True) -> str:
     process = subprocess.Popen(cmd, stdout=stdout, stderr=stderr, shell=True)
     process.wait()
     if process.returncode:
-        # TODO: ideally print stdout and stderr here.
         raise Exception(f'command {cmd} failed with exit code {process.returncode}')
     if capture_stdout:
         return str(process.communicate()[0].strip(), 'UTF-8')
@@ -158,21 +158,31 @@ def led(command):
 @app.route('/market/<command>', methods=['POST'])
 def market(command):
     print(command)
-    return ok({'resp': ''})
+    resp = f"unknown command: '{command}'"
+    if command == 'set-symbol':
+        symbol = request.get_json()
+        db.set_stock(symbol)
+        resp = symbol
+    elif command == 'check':
+        symbol, date = db.get_stock()
+        resp = f"{symbol} {date}"
+    return ok({'resp': resp})
 
 
 if __name__ == '__main__':
     pixels.blue()
-
+    if not db.get_stock():
+        db.set_stock("SPY")
     threading.Thread(target=lambda: app.run(host="0.0.0.0", port=80, debug=True, use_reloader=False)).start()
 
     while True:
         if db.get_awake_status():
             print("running")
-            if stock.is_symbol_up("SPY"):
+            symbol, date = db.get_stock()
+            if stock.is_symbol_up(symbol):
                 pixels.green()
             else:
                 pixels.red()
         else:
             print("not running")
-        time.sleep(20)
+        time.sleep(60 * 5)

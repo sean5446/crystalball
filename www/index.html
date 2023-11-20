@@ -21,6 +21,48 @@ $(document).ready(function(){
   var quips = null;
   var advice = null;
 
+  var wait = false;
+  function throttle(callback, limit, ...params) {
+    if (!wait) {
+        callback(...params);
+        wait = true;
+        setTimeout(function() {
+            wait = false;
+        }, limit);
+    }
+  }
+
+  function getRandom(array) {
+		return array[Math.floor(Math.random() * array.length)];
+	}
+
+  function setColor(color) {
+    console.log(color);
+    post('led/custom', color, function(data) {
+      $("#result").html("LEDs: " + data.resp);
+      $('#custom').css("color", `rgb(${color.r}, ${color.g}, ${color.b}`)
+    });
+  }
+
+  function post(url, data, success) {
+    $.ajax({
+      type: 'POST',
+      url: url,
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      data: JSON.stringify(data),
+      success: success
+    });
+  }
+
+  // https://github.com/PitPik/tinyColorPicker
+	$('#custom').colorPicker({
+    renderCallback: function($elm, toggled) {
+      var color = this.color.colors.RND.rgb;
+      throttle(setColor, 1000, color);
+    }
+  });
+
   $.get("quips", function(data) {
     quips = data.resp;
     console.log(quips)
@@ -53,14 +95,18 @@ $(document).ready(function(){
 
   $(".market").click(function() {
     console.log(this.id);
-    $.post(`market/${this.id}`, function(data) {
+    if (this.id == 'yahoo' || this.id == 'google') {
+      return;
+    }
+    var symbol = null;
+    if (this.id == 'set-symbol') {
+      symbol = prompt("Enter symbol name");
+      if (symbol == null) return;
+    }
+    post(`market/${this.id}`, symbol, function(data) {
       $("#result").html("market: " + data.resp);
     });
   });
-
-  function getRandom(array) {
-		return array[Math.floor(Math.random() * array.length)];
-	}
 
   $(".audio").click(function() {
     console.log(this.id);
@@ -85,44 +131,6 @@ $(document).ready(function(){
     $(`#tab-${this.id}`).show();
   });
 
-  var wait = false;
-  function throttle(callback, limit, ...params) {
-    if (!wait) {
-        callback(...params);
-        wait = true;
-        setTimeout(function() {
-            wait = false;
-        }, limit);
-    }
-  }
-
-  function post(url, data, success) {
-    $.ajax({
-      type: 'POST',
-      url: url,
-      dataType: 'json',
-      contentType: 'application/json; charset=utf-8',
-      data: JSON.stringify(data),
-      success: success
-    });
-  }
-
-  function setColor(color) {
-    console.log(color);
-    post('led/custom', color, function(data) {
-      $("#result").html("LEDs: " + data.resp);
-      $('#custom').css("color", `rgb(${color.r}, ${color.g}, ${color.b}`)
-    });
-  }
-
-  // https://github.com/PitPik/tinyColorPicker
-	$('#custom').colorPicker({
-    renderCallback: function($elm, toggled) {
-      var color = this.color.colors.RND.rgb;
-      throttle(setColor, 1000, color);
-    }
-  });
-
   $("#tab-audio").show();
 
 });
@@ -140,6 +148,7 @@ body {
 }
 #title {
   font-size: 90px;
+  margin: 90px 0px 0px 0px;
 }
 #result {
   margin: 15px 0px 15px 0px;
@@ -156,44 +165,49 @@ a {
 }
 .audio {
   cursor: pointer;
-  margin: 50px 0px 50px 0px;
+  margin: 50px 20% 50px 20%;
 }
 .market {
   cursor: pointer;
-  margin: 50px 0px 50px 0px;
+  margin: 50px 20% 50px 20%;
 }
 .system {
   cursor: pointer;
-  margin: 50px 0px 50px 0px;
+  margin: 50px 20% 50px 20%;
 }
 .led {
   cursor: pointer;
-  margin: 50px 0px 50px 0px;
+  margin: 50px 20% 50px 20%;
 }
+
 </style>
 </head>
 <body>
-  <br />
+
   <div id="title" style="color: #7c5097;">
     🔮 Crystal Ball 🔮
   </div>
 
   <div id="nav-menu">
-    <span class="nav" id="audio">Advice</span> |
-    <span class="nav" id="market">Market</span> |
-    <span class="nav" id="system">System</span> |
+    <span class="nav" id="audio">Advice</span>
+    <span style="color: gray;">|</span>
+    <span class="nav" id="market">Market</span>
+    <span style="color: gray;">|</span>
+    <span class="nav" id="system">System</span>
+    <span style="color: gray;">|</span>
     <span class="nav" id="leds">LEDs</span>
   </div>
 
   <div id="result">&nbsp;</div>
 
   <div class="tab" id="tab-audio" style="display: none">
-    <div class="audio" id="advice" style="color: gray;">advice 💵</div>
+    <div class="audio" id="advice" style="color: green;">advice 💵</div>
     <div class="audio" id="quips" style="color: gray;">quip 🔊</div>
   </div>
 
   <div class="tab" id="tab-market" style="display: none">
     <div class="market" id="check" style="color: gray;">last check ⏰</div>
+    <div class="market" id="set-symbol" style="color: green;">set symbol 💲</div>
     <div class="market" id="google">
       <a href="https://finance.google.com">google 📈</a></div>
     <div class="market" id="yahoo">

@@ -53,7 +53,10 @@ class Stock:
 
     def is_symbol_up(self, symbol):
         info = self.get_quote(symbol)
-        if info[''] - info[''] >= 0:
+        details = info['quoteSummary']['result'][0]['summaryDetail']
+        close = float(details['previousClose']['raw'])
+        bid = float(details['bid']['raw'])
+        if bid - close >= 0:
             return True
         else:
             return False
