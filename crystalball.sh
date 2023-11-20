@@ -12,6 +12,6 @@
 
 # install with: sudo update-rc.d crystalball.sh defaults 
 
-# wait for network to connect
-sleep 5 && /usr/bin/python3 /home/queso/src/crystalball/server.py > /tmp/bootservice.log 2>&1
+# wait for network to connect then run
+sleep 5 && /usr/bin/python3 /home/queso/src/crystalball/server.py
 
