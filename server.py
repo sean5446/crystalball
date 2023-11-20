@@ -185,6 +185,7 @@ if __name__ == '__main__':
                 pixels.green()
             else:
                 pixels.red()
+            db.set_stock(symbol)
         else:
             print("not running")
         time.sleep(60 * 5)
