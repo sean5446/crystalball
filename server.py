@@ -171,7 +171,9 @@ def market(command):
 
 if __name__ == '__main__':
     pixels.blue()
-    if not db.get_stock():
+    try:
+        db.get_stock()
+    except:
         db.set_stock("SPY")
     threading.Thread(target=lambda: app.run(host="0.0.0.0", port=80, debug=True, use_reloader=False)).start()
 

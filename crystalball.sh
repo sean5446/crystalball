@@ -1,5 +1,4 @@
-#!/bin/bash
-
+#!/bin/sh
 # /etc/init.d/crystalball.sh
 ### BEGIN INIT INFO
 # Provides:          crystalball.sh
@@ -11,4 +10,8 @@
 # Description:       Enable service provided by daemon.
 ### END INIT INFO
 
-sudo /usr/bin/python3 /home/queso/src/crystalball/server.py
+# install with: sudo update-rc.d crystalball.sh defaults 
+
+# wait for network to connect
+sleep 5 && /usr/bin/python3 /home/queso/src/crystalball/server.py > /tmp/bootservice.log 2>&1
+
