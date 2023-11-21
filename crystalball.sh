@@ -10,8 +10,8 @@
 # Description:       Enable service provided by daemon.
 ### END INIT INFO
 
-# install with: sudo update-rc.d crystalball.sh defaults 
+# copy this to: /etc/init.d/
+# then install with: sudo update-rc.d crystalball.sh defaults 
 
-# wait for network to connect then run
-sleep 5 && /usr/bin/python3 /home/queso/src/crystalball/server.py
+sudo /usr/bin/python3 /home/queso/src/crystalball/server.py
 

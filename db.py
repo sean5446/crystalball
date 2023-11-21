@@ -8,6 +8,7 @@ class Db:
     def __init__(self, db_name):
         self.db_name = db_name
 
+        # each table only has one row - using the DB as thread safe, reboot persistent storage
         with sqlite3.connect(self.db_name) as con:
             cur = con.cursor()
             cur.execute("create table if not exists status(id integer primary key, awake integer, log text)")
@@ -42,12 +43,12 @@ class Db:
                 cur = con.cursor()
                 if not self.get_stock():
                     raise RuntimeError
-                print(f"updating stock {symbol}")
+                print(f"updating stock {symbol} {now}")
                 cur.execute(f"update stocks set symbol='{symbol}', date='{now}' where id=1")
                 con.commit()
             except Exception as ex:
                 cur = con.cursor()
-                print(f"inserting symbol {symbol}")
+                print(f"inserting symbol {symbol} {now}")
                 cur.execute(f"insert into stocks values (1, '{symbol}', '{now}')")
                 con.commit()
 

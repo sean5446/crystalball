@@ -197,6 +197,9 @@ if __name__ == '__main__':
         db.set_stock("SPY")
     threading.Thread(target=lambda: app.run(host="0.0.0.0", port=80, debug=True, use_reloader=False)).start()
 
+    # wait for network to come online after cold boot
+    time.sleep(10)
+
     while True:
         try:
             if db.get_awake_status():
