@@ -191,14 +191,18 @@ def set_globe_error_color(ex: Exception):
 
 if __name__ == '__main__':
     pixels.blue()
+
+    threading.Thread(target=lambda: app.run(host="0.0.0.0", port=80, debug=True, use_reloader=False)).start()
+
+    # service is supposed to wait for network to come online...
+    # give it extra time as that doesn't seem to work
+    time.sleep(10)
+    stock.get_cookie_crumb()
+
     try:
         db.get_stock()
     except:
         db.set_stock("SPY")
-    threading.Thread(target=lambda: app.run(host="0.0.0.0", port=80, debug=True, use_reloader=False)).start()
-
-    # wait for network to come online after cold boot
-    time.sleep(10)
 
     while True:
         try:

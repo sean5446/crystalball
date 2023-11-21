@@ -1,0 +1,13 @@
+[Unit]
+Description=CrystalBall
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=queso
+WorkingDirectory=/home/queso
+ExecStart=/home/queso/src/crystalball/run.sh
+
+[Install]
+WantedBy=multi-user.target
