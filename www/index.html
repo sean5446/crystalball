@@ -131,7 +131,7 @@ $(document).ready(function(){
     $(`#tab-${this.id}`).show();
   });
 
-  $("#tab-audio").show();
+  $("#tab-market").show();
 
 });
 </script>
@@ -189,8 +189,6 @@ a {
   </div>
 
   <div id="nav-menu">
-    <span class="nav" id="audio">Advice</span>
-    <span style="color: gray;">|</span>
     <span class="nav" id="market">Market</span>
     <span style="color: gray;">|</span>
     <span class="nav" id="system">System</span>
@@ -200,12 +198,10 @@ a {
 
   <div id="result">&nbsp;</div>
 
-  <div class="tab" id="tab-audio" style="display: none">
+  <div class="tab" id="tab-market" style="display: none">
     <div class="audio" id="advice" style="color: green;">advice 💵</div>
     <div class="audio" id="quips" style="color: gray;">quip 🔊</div>
-  </div>
 
-  <div class="tab" id="tab-market" style="display: none">
     <div class="market" id="check" style="color: gray;">last check ⏰</div>
     <div class="market" id="set-symbol" style="color: green;">set symbol 💲</div>
     <div class="market" id="google">
@@ -217,6 +213,8 @@ a {
   <div class="tab" id="tab-system" style="display: none">
     <div class="system" id="status" style="color: gray;">status 🚀</div>
     <div class="system" id="uptime" style="color: gray;">uptime ⏰</div>
+    <div class="system" id="log" style="color: gray;">
+      <a href="system/log">log 📜</a></div>
     <div class="system" id="sleep" style="color: orange;">sleep 🌙</div>
     <div class="system" id="wake" style="color: green;">wake ☀️</div>
     <div class="system" id="reboot" style="color: yellow;">reboot 🔄</div>
@@ -228,6 +226,8 @@ a {
     <div class="led" id="green" style="color: green;">green 🟢</div>
     <div class="led" id="blue" style="color: blue;">blue 🔵</div>
     <div class="led" id="custom" style="text-shadow: 1px 1px 2px white;">custom ❓</div>
+    <div class="led" id="rainbow" style="color: orange;">rainbow 🌈</div>
+    <div class="led" id="fire" style="color: red;">fire 🔥</div>
     <div class="led" id="off">off 🛑</div>
   </div>
 

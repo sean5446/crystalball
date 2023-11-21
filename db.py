@@ -10,9 +10,30 @@ class Db:
 
         with sqlite3.connect(self.db_name) as con:
             cur = con.cursor()
-            cur.execute("create table if not exists status(id, awake)")
-            cur.execute("create table if not exists stocks(id, symbol, date)")
+            cur.execute("create table if not exists status(id integer primary key, awake integer, log text)")
+            cur.execute("create table if not exists stocks(id integer primary key, symbol text, date text)")
             con.commit()
+
+    def set_awake_status(self, status: int):
+        with sqlite3.connect(self.db_name) as con:
+            cur = con.cursor()
+            print(f"setting status {status}")
+            cur.execute(f"update status set awake={status} where id=1")
+            con.commit()
+
+    def get_awake_status(self) -> bool:
+        with sqlite3.connect(self.db_name) as con:
+            try:
+                cur = con.cursor()
+                res = cur.execute("select awake from status where id=1")
+                awake = res.fetchall()
+                return bool(awake[0][0])
+            except Exception as ex:
+                cur = con.cursor()
+                print(f"inserting initial status")
+                cur.execute(f"insert into status values (1, 1, 'no errors yet')")
+                con.commit()
+                return True
 
     def set_stock(self, symbol):
         with sqlite3.connect(self.db_name) as con:
@@ -21,6 +42,7 @@ class Db:
                 cur = con.cursor()
                 if not self.get_stock():
                     raise RuntimeError
+                print(f"updating stock {symbol}")
                 cur.execute(f"update stocks set symbol='{symbol}', date='{now}' where id=1")
                 con.commit()
             except Exception as ex:
@@ -32,31 +54,25 @@ class Db:
     def get_stock(self):
         with sqlite3.connect(self.db_name) as con:
             cur = con.cursor()
-            res = cur.execute(f"select * from stocks where id=1")
+            res = cur.execute("select * from stocks where id=1")
             stock = res.fetchall()
             db_symbol = stock[0][1]
             db_date = stock[0][2]
             return db_symbol, db_date
 
-
-    def set_awake_status(self, status: int):
+    def set_log_status(self, log: str):
         with sqlite3.connect(self.db_name) as con:
             cur = con.cursor()
-            print(f"setting status {status}")
-            cur.execute(f"update status set awake={status} where id=1")
+            print("setting log")
+            log = log.replace("'", "''")
+            cur.execute(f"update status set log='{log}' where id=1")
             con.commit()
 
-
-    def get_awake_status(self) -> bool:
+    def get_log_status(self) -> str:
         with sqlite3.connect(self.db_name) as con:
-            try:
-                cur = con.cursor()
-                res = cur.execute(f"select awake from status where id=1")
-                awake = res.fetchall()
-                return bool(awake[0][0])
-            except Exception as ex:
-                cur = con.cursor()
-                print(f"inserting status 1")
-                cur.execute(f"insert into status values (1, 1)")
-                con.commit()
-                return True
+            cur = con.cursor()
+            res = cur.execute("select log from status where id=1")
+            log = res.fetchall()
+            return str(log[0][0])
+        
+

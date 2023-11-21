@@ -5,6 +5,9 @@ import time
 import threading
 import subprocess
 import asyncio
+import traceback
+
+from datetime import datetime
 
 from flask import Flask, send_from_directory, request, abort
 from pixelcontrol import PixelControl
@@ -107,9 +110,8 @@ def advice():
     return ok({'resp': advice})
 
 
-@app.route('/system/<command>', methods=['POST'])
+@app.route('/system/<command>', methods=['POST', 'GET'])
 def system(command):
-    print(command)
     resp = f"unknown command: '{command}'"
     if command == 'uptime':
         resp = run_cmd("uptime")
@@ -131,12 +133,12 @@ def system(command):
         db.set_awake_status(1)
         pixels.blue()
         resp = 'awake'
+    elif command == 'log':
+        return db.get_log_status()
     return ok({'resp': resp})
-
 
 @app.route('/led/<command>', methods=['POST'])
 def led(command):
-    print(command)
     if command == 'green':
         pixels.green()
     elif command == 'red':
@@ -145,9 +147,10 @@ def led(command):
         pixels.blue()
     elif command == 'rainbow':
         pixels.rainbow()
+    elif command == 'fire':
+        pixels.rainbow()
     elif command == 'custom':
         rgb = request.get_json()
-        print(rgb)
         command = (rgb['r'], rgb['g'], rgb['b'])
         pixels.fill(command)
     else:
@@ -157,16 +160,33 @@ def led(command):
 
 @app.route('/market/<command>', methods=['POST'])
 def market(command):
-    print(command)
     resp = f"unknown command: '{command}'"
     if command == 'set-symbol':
         symbol = request.get_json()
-        db.set_stock(symbol)
+        set_globe_market_color(symbol)
         resp = symbol
     elif command == 'check':
         symbol, date = db.get_stock()
         resp = f"{symbol} {date}"
     return ok({'resp': resp})
+
+
+def set_globe_market_color(symbol: str):
+    try:
+        db.set_stock(symbol)
+        if stock.is_symbol_up(symbol):
+            pixels.green()
+        else:
+            pixels.red()
+    except Exception as ex:
+        set_globe_error_color(ex)
+
+
+def set_globe_error_color(ex: Exception):
+    pixels.blue()
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    msg = f'<body style="font-size:50px">{now}<br/><br/>{ex}<br/><br/>{traceback.format_exc()}'
+    db.set_log_status(msg)
 
 
 if __name__ == '__main__':
@@ -178,14 +198,13 @@ if __name__ == '__main__':
     threading.Thread(target=lambda: app.run(host="0.0.0.0", port=80, debug=True, use_reloader=False)).start()
 
     while True:
-        if db.get_awake_status():
-            print("running")
-            symbol, date = db.get_stock()
-            if stock.is_symbol_up(symbol):
-                pixels.green()
+        try:
+            if db.get_awake_status():
+                print("running")
+                symbol, date = db.get_stock()
+                set_globe_market_color(symbol)
             else:
-                pixels.red()
-            db.set_stock(symbol)
-        else:
-            print("not running")
-        time.sleep(60 * 5)
+                print("not running")
+        except Exception as ex:
+            set_globe_error_color(ex)
+        time.sleep(60 * 10)
