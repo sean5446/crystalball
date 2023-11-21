@@ -163,21 +163,23 @@ def market(command):
     resp = f"unknown command: '{command}'"
     if command == 'set-symbol':
         symbol = request.get_json()
-        set_globe_market_color(symbol)
+        set_market_state(symbol)
         resp = symbol
     elif command == 'check':
-        symbol, date = db.get_stock()
-        resp = f"{symbol} {date}"
+        symbol, date, close, bid = db.get_stock()
+        resp = f"{symbol} {date} <br/> close:{close} bid:{bid}"
     return ok({'resp': resp})
 
 
-def set_globe_market_color(symbol: str):
+def set_market_state(symbol: str):
     try:
         db.set_stock(symbol)
-        if stock.is_symbol_up(symbol):
+        is_up, close, bid = stock.is_symbol_up(symbol)
+        if is_up:
             pixels.green()
         else:
             pixels.red()
+        db.set_stock_prices(close, bid)
     except Exception as ex:
         set_globe_error_color(ex)
 
@@ -208,8 +210,8 @@ if __name__ == '__main__':
         try:
             if db.get_awake_status():
                 print("running")
-                symbol, date = db.get_stock()
-                set_globe_market_color(symbol)
+                symbol = db.get_stock()[0]
+                set_market_state(symbol)
             else:
                 print("not running")
         except Exception as ex:

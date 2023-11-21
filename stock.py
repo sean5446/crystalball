@@ -12,6 +12,7 @@ class Stock:
     def get_cookie_crumb(self):
         self.cookie = self.get_cookie()
         self.crumb = self.get_crumb()
+        return self.cookie, self.crumb
 
     def get_cookie(self):
         response = self.session.get(
@@ -27,7 +28,7 @@ class Stock:
             return self.cookie
         return None
 
-    def get_crumb(self):
+    def get_crumb(self) -> str:
         response = self.session.get(
             url='https://query1.finance.yahoo.com/v1/test/getcrumb',
             headers=self.headers,
@@ -59,6 +60,6 @@ class Stock:
         close = float(details['previousClose']['raw'])
         bid = float(details['bid']['raw'])
         if bid - close >= 0:
-            return True
+            return True, close, bid
         else:
-            return False
+            return False, close, bid

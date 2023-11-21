@@ -89,7 +89,7 @@ $(document).ready(function(){
     console.log(this.id);
     if (this.id == 'custom') return;
     $.post(`led/${this.id}`, function(data) {
-      $("#result").html("LEDs: " + data.resp);
+      $("#result").html(data.resp);
     });
   });
 
@@ -104,7 +104,7 @@ $(document).ready(function(){
       if (symbol == null) return;
     }
     post(`market/${this.id}`, symbol, function(data) {
-      $("#result").html("market: " + data.resp);
+      $("#result").html(data.resp);
     });
   });
 

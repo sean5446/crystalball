@@ -7,12 +7,11 @@ from datetime import datetime
 class Db:
     def __init__(self, db_name):
         self.db_name = db_name
-
         # each table only has one row - using the DB as thread safe, reboot persistent storage
         with sqlite3.connect(self.db_name) as con:
             cur = con.cursor()
             cur.execute("create table if not exists status(id integer primary key, awake integer, log text)")
-            cur.execute("create table if not exists stocks(id integer primary key, symbol text, date text)")
+            cur.execute("create table if not exists stocks(id integer primary key, symbol text, date text, close, bid)")
             con.commit()
 
     def set_awake_status(self, status: int):
@@ -49,17 +48,22 @@ class Db:
             except Exception as ex:
                 cur = con.cursor()
                 print(f"inserting symbol {symbol} {now}")
-                cur.execute(f"insert into stocks values (1, '{symbol}', '{now}')")
+                cur.execute(f"insert into stocks values (1, '{symbol}', '{now}', '', '')")
                 con.commit()
+
+    def set_stock_prices(self, close, bid):
+        with sqlite3.connect(self.db_name) as con:
+            cur = con.cursor()
+            print(f"updating stock price close:{close} bid:{bid}")
+            cur.execute(f"update stocks set close='{close}', bid='{bid}' where id=1")
+            con.commit()
 
     def get_stock(self):
         with sqlite3.connect(self.db_name) as con:
             cur = con.cursor()
             res = cur.execute("select * from stocks where id=1")
             stock = res.fetchall()
-            db_symbol = stock[0][1]
-            db_date = stock[0][2]
-            return db_symbol, db_date
+            return stock[0][1], stock[0][2], stock[0][3], stock[0][4]
 
     def set_log_status(self, log: str):
         with sqlite3.connect(self.db_name) as con:
