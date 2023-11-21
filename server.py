@@ -6,6 +6,7 @@ import threading
 import subprocess
 import asyncio
 import traceback
+import requests
 
 from datetime import datetime
 
@@ -191,25 +192,38 @@ def set_globe_error_color(ex: Exception):
     db.set_log_status(msg)
 
 
-if __name__ == '__main__':
+def wait_for_network():
+    # systemctl is supposed to wait for network to come online after cold boot
+    # give it extra time because it doesn't seem to work
+    while True:
+        time.sleep(1)
+        pixels.off()
+        try:
+            if requests.get('https://yahoo.com').status_code == 200:
+                break
+        except:
+            pass
+        pixels.blue()
+        time.sleep(1)
+
+
+def main():
     pixels.blue()
-
-    threading.Thread(target=lambda: app.run(host="0.0.0.0", port=80, debug=True, use_reloader=False)).start()
-
-    # service is supposed to wait for network to come online...
-    # give it extra time as that doesn't seem to work
-    time.sleep(10)
-    stock.get_cookie_crumb()
 
     try:
         db.get_stock()
     except:
         db.set_stock("SPY")
 
+    threading.Thread(target=lambda: app.run(host="0.0.0.0", port=80, debug=True, use_reloader=False)).start()
+
+    wait_for_network()
+
     while True:
         try:
             if db.get_awake_status():
                 print("running")
+                stock.get_cookie_crumb()
                 symbol = db.get_stock()[0]
                 set_market_state(symbol)
             else:
@@ -217,3 +231,7 @@ if __name__ == '__main__':
         except Exception as ex:
             set_globe_error_color(ex)
         time.sleep(60 * 10)
+
+
+if __name__ == '__main__':
+    main()

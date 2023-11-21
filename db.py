@@ -69,7 +69,7 @@ class Db:
         with sqlite3.connect(self.db_name) as con:
             cur = con.cursor()
             print("setting log")
-            log = log.replace("'", "''")
+            log = log.replace("'", "''") # really bad escape
             cur.execute(f"update status set log='{log}' where id=1")
             con.commit()
 
