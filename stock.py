@@ -3,6 +3,7 @@ import requests
 import re
 import json
 
+# bare bones re-implementation of yfinance
 
 class Stock:
     def __init__(self):
